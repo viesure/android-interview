@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Viesure</string>
+
+    <string name="common_error_retry">Retry</string>
+
+    <string name="json_parse_error_title">Unexpected response</string>
+    <string name="json_parse_error_description">Could not parse server json response to expected format</string>
+
+    <string name="backend_error_title">Backend error</string>
+    <string name="backend_error_description">Server returned an error with status code %s</string>
+
+    <string name="no_internet_title">Connection failure</string>
+    <string name="no_internet_description">Could not connect to server, check your internet connection</string>
+
+    <string name="common_unknown_error_title">Error</string>
+    <string name="common_unknown_error_description">Unexpected error happened</string>
+
+    <string name="database_error_title">Database Error</string>
+    <string name="database_error_description">Could not read from local database</string>
+
+    <string name="article_not_found_error_title">Article not found</string>
+    <string name="article_not_found_error_description">The requested article is not found</string>
+
+    <string name="article_details_author"><![CDATA[<b>Author:</b> %s]]></string>
+
+</resources>
