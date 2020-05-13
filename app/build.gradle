@@ -127,7 +127,10 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:logging-interceptor:4.0.0'
 
-    implementation 'org.kodein.di:kodein-di-generic-jvm:6.5.0'
+    def kodein_version = '6.5.0'
+    implementation "org.kodein.di:kodein-di-generic-jvm:$kodein_version"
+    implementation "org.kodein.di:kodein-di-framework-android-x:$kodein_version"
+
     def glide_version = '4.9.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"

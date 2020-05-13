@@ -1,25 +1,20 @@
 package io.viesure.hiring.screen.articlelist
 
 import BaseUnitTest
-import android.view.View
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.launchActivity
-import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.ActivityTestRule
+import androidx.test.platform.app.InstrumentationRegistry
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.whenever
 import io.viesure.hiring.MainActivity
-import io.viesure.hiring.R
-import io.viesure.hiring.di.appKodein
-import io.viesure.hiring.screen.articlelist.ArticleListViewModel
+import io.viesure.hiring.ViesureApplication
 import io.viesure.hiring.screen.base.Event
 import io.viesure.hiring.view.ArticleHeaderWidget
 import io.viesure.hiring.view.ErrorWidget
@@ -39,17 +34,30 @@ import org.kodein.di.generic.provider
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class ArticleListFragmentTest : BaseUnitTest() {
-    private val mockedViewModel: ArticleListViewModel = mock()
-    private val articleLiveData = MediatorLiveData<List<ArticleHeaderWidget.ViewContent>>()
-    private val loadingLiveData = MediatorLiveData<Int>()
-    private val navigationLiveData = MutableLiveData<Event<String>>()
-    private val errorLiveData = MediatorLiveData<ErrorWidget.ErrorViewContent>()
+    private lateinit var mockedViewModel: ArticleListViewModel
+    private lateinit var articleLiveData: MediatorLiveData<List<ArticleHeaderWidget.ViewContent>>
+    private lateinit var loadingLiveData: MediatorLiveData<Int>
+    private lateinit var navigationLiveData: MutableLiveData<Event<String>>
+    private lateinit var errorLiveData: MediatorLiveData<ErrorWidget.ErrorViewContent>
 
-    init {
-        appKodein = Kodein {
-            extend(appKodein, copy = Copy.All, allowOverride = true)
+    @Before
+    override fun before() {
+        super.before()
+
+        mockedViewModel = mock()
+
+        val app = (InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as ViesureApplication)
+        app.kodein = Kodein {
+            extend(app.kodein, copy = Copy.All, allowOverride = true)
+
             bind<ArticleListViewModel>(overrides = true) with provider { mockedViewModel }
         }
+
+
+        articleLiveData = MediatorLiveData<List<ArticleHeaderWidget.ViewContent>>()
+        loadingLiveData = MediatorLiveData<Int>()
+        navigationLiveData = MutableLiveData<Event<String>>()
+        errorLiveData = MediatorLiveData<ErrorWidget.ErrorViewContent>()
 
         whenever(mockedViewModel.articleHeaders).thenReturn(articleLiveData)
         whenever(mockedViewModel.articleIdSelected).thenReturn(navigationLiveData)
@@ -57,11 +65,10 @@ class ArticleListFragmentTest : BaseUnitTest() {
         whenever(mockedViewModel.loadingVisibility).thenReturn(loadingLiveData)
     }
 
-    @get:Rule
-    val activityTestRule = ActivityTestRule(MainActivity::class.java)
-
     @Test
     fun testLoad() = runBlockingTest {
+
+        val scenario = launchActivity<MainActivity>()
 
         articleLiveData.value =
             listOf(
@@ -69,12 +76,15 @@ class ArticleListFragmentTest : BaseUnitTest() {
                 ArticleHeaderWidget.ViewContent(oldArticle, null)
             )
 
+        //TODO test failed sometimes without waiting here,but that was before using activityScenario, after some more testing it may be removed
         Thread.sleep(200)
 
         onView(withText(newArticle.title)).check(matches(isDisplayed()))
         onView(withText(oldArticle.title)).check(matches(isDisplayed()))
 
         onView(withText(newArticle.title)).perform(click())
-        //TODO check navigation
+        //TODO test navigation
+
+        scenario.close()
     }
 }

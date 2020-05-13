@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonDataException
 import io.viesure.hiring.datasource.network.api.ArticleApi
 import io.viesure.hiring.datasource.network.dto.ArticleDto
 import io.viesure.hiring.di.DiConfig
-import io.viesure.hiring.di.appKodein
+import io.viesure.hiring.di.initKodein
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,7 +15,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.kodein.di.Copy
 import org.kodein.di.Kodein
 import org.kodein.di.direct
 import org.kodein.di.generic.bind
@@ -36,9 +35,8 @@ class ArticleNetworkTest : BaseUnitTest() {
         server.start()
         val baseUrl = server.url("/").toString()
 
-
         testKodein = Kodein {
-            extend(appKodein, copy = Copy.All, allowOverride = true)
+            initKodein()
 
             bind<String>(DiConfig.TAG_BASE_URL, true) with singleton { baseUrl }
 

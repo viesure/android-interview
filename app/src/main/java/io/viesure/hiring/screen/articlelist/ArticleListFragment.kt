@@ -10,16 +10,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import io.viesure.hiring.MainActivity
 import io.viesure.hiring.R
-import io.viesure.hiring.screen.base.viewModelFactory
 import io.viesure.hiring.databinding.FragmentArticleListBinding
-import io.viesure.hiring.di.appKodein
 import io.viesure.hiring.screen.articledetail.ArticleDetailFragment
-import org.kodein.di.Kodein
+import io.viesure.hiring.screen.base.viewModelFactory
+import org.kodein.di.android.x.kodein
 import org.kodein.di.direct
 import org.kodein.di.generic.instance
 
 class ArticleListFragment : Fragment() {
-    private val viewModel by viewModels<ArticleListViewModel>(factoryProducer = { viewModelFactory { appKodein.direct.instance<ArticleListViewModel>() } })
+    private val kodein by kodein()
+    private val viewModel by viewModels<ArticleListViewModel>(factoryProducer = { viewModelFactory { kodein.direct.instance<ArticleListViewModel>() } })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,7 +45,7 @@ class ArticleListFragment : Fragment() {
         viewModel.load()
     }
 
-    private fun setupNavigation(){
+    private fun setupNavigation() {
         viewModel.articleIdSelected.observe(viewLifecycleOwner, Observer {
             it.getContentIfNotHandled()?.let {
                 openArticleDetails(it)
@@ -53,7 +53,7 @@ class ArticleListFragment : Fragment() {
         })
     }
 
-    private fun openArticleDetails(articleId: String){
+    private fun openArticleDetails(articleId: String) {
         (requireActivity() as? MainActivity)?.openFragment(ArticleDetailFragment.newInstance(articleId))
     }
 }

@@ -9,13 +9,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import io.viesure.hiring.R
 import io.viesure.hiring.databinding.FragmentArticleDetailBinding
-import io.viesure.hiring.di.appKodein
 import io.viesure.hiring.screen.base.viewModelFactory
+import org.kodein.di.android.x.kodein
 import org.kodein.di.direct
 import org.kodein.di.generic.instance
 
 class ArticleDetailFragment : Fragment() {
-    private val viewModel by viewModels<ArticleDetailViewModel>(factoryProducer = { viewModelFactory { appKodein.direct.instance<ArticleDetailViewModel>() } })
+    private val kodein by kodein()
+    private val viewModel by viewModels<ArticleDetailViewModel>(factoryProducer = { viewModelFactory { kodein.direct.instance<ArticleDetailViewModel>() } })
 
     companion object {
         const val ARG_ARTICLE_ID = "ARG_ARTICLE_ID"
