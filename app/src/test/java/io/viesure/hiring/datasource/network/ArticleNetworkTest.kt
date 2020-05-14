@@ -20,6 +20,9 @@ import org.kodein.di.direct
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.InputStreamReader
 import java.util.*
 
 
@@ -52,27 +55,7 @@ class ArticleNetworkTest : BaseUnitTest() {
 
     @Test
     fun testSuccess() {
-        server.enqueue(
-            MockResponse().setBody(
-                "[\n" +
-                        "{\n" +
-                        "\"id\": 1,\n" +
-                        "\"title\": \"Realigned multimedia framework\",\n" +
-                        "\"description\": \"nisl aenean lectus pellentesque eget nunc donec quis orci eget orci vehicula condimentum curabitur in libero ut massa volutpat convallis morbi odio odio elementum eu interdum eu tincidunt in leo maecenas pulvinar lobortis est phasellus sit amet erat nulla tempus vivamus in felis eu sapien cursus vestibulum proin eu mi nulla ac enim in tempor turpis nec euismod scelerisque quam turpis adipiscing lorem vitae mattis nibh ligula\",\n" +
-                        "\"author\": \"sfolley0@nhs.uk\",\n" +
-                        "\"release_date\": \"6/25/2018\",\n" +
-                        "\"image\": \"http://dummyimage.com/366x582.png/5fa2dd/ffffff\"\n" +
-                        "},\n" +
-                        "{\n" +
-                        "\"id\": 2,\n" +
-                        "\"title\": \"Versatile 6th generation definition\",\n" +
-                        "\"description\": \"a nibh in quis justo maecenas rhoncus aliquam lacus morbi quis tortor id nulla ultrices aliquet maecenas leo odio condimentum id luctus nec molestie sed justo pellentesque viverra pede ac diam cras pellentesque volutpat dui maecenas tristique est et tempus semper est quam pharetra magna ac consequat metus sapien ut nunc vestibulum ante ipsum primis in\",\n" +
-                        "\"author\": \"ndanet1@sohu.com\",\n" +
-                        "\"release_date\": \"9/28/2019\",\n" +
-                        "\"image\": \"http://dummyimage.com/573x684.bmp/cc0000/ffffff\"\n" +
-                        "}]"
-            )
-        )
+        server.enqueue(MockResponse().setBody(readFile("article_list_valid.json")))
 
         val expected = listOf(
             ArticleDto(
@@ -107,31 +90,23 @@ class ArticleNetworkTest : BaseUnitTest() {
 
     @Test(expected = JsonDataException::class)
     fun testParseError() {
-        server.enqueue(
-            MockResponse().setBody(
-                "[\n" +
-                        "{\n" +
-                        "\"id\": 1,\n" +
-                        "\"title\": \"Realigned multimedia framework\",\n" +
-                        "\"description\": \"nisl aenean lectus pellentesque eget nunc donec quis orci eget orci vehicula condimentum curabitur in libero ut massa volutpat convallis morbi odio odio elementum eu interdum eu tincidunt in leo maecenas pulvinar lobortis est phasellus sit amet erat nulla tempus vivamus in felis eu sapien cursus vestibulum proin eu mi nulla ac enim in tempor turpis nec euismod scelerisque quam turpis adipiscing lorem vitae mattis nibh ligula\",\n" +
-                        "\"author\": \"sfolley0@nhs.uk\",\n" +
-                        "\"release_date\": \" gf 6/25/2018 z+12\",\n" +
-                        "\"image\": \"http://dummyimage.com/366x582.png/5fa2dd/ffffff\"\n" +
-                        "},\n" +
-                        "{\n" +
-                        "\"id\": 2,\n" +
-                        "\"title\": \"Versatile 6th generation definition\",\n" +
-                        "\"description\": \"a nibh in quis justo maecenas rhoncus aliquam lacus morbi quis tortor id nulla ultrices aliquet maecenas leo odio condimentum id luctus nec molestie sed justo pellentesque viverra pede ac diam cras pellentesque volutpat dui maecenas tristique est et tempus semper est quam pharetra magna ac consequat metus sapien ut nunc vestibulum ante ipsum primis in\",\n" +
-                        "\"author\": \"ndanet1@sohu.com\",\n" +
-                        "\"release_date\": \"9/28/2019\",\n" +
-                        "\"image\": \"http://dummyimage.com/573x684.bmp/cc0000/ffffff\"\n" +
-                        "}]"
-            )
-        )
+        server.enqueue(MockResponse().setBody(readFile("article_list_invalid.json")))
 
         runBlocking {
             val articleApi: ArticleApi = testKodein.direct.instance()
             articleApi.getArticles()
         }
+    }
+
+
+    private fun readFile(filename: String): String {
+        val br = BufferedReader(InputStreamReader(FileInputStream("src/test/res/$filename")))
+        val sb = StringBuilder()
+        var line: String? = br.readLine()
+        while (line != null) {
+            sb.append(line)
+            line = br.readLine()
+        }
+        return sb.toString()
     }
 }
