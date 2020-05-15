@@ -15,6 +15,7 @@ import io.viesure.hiring.screen.base.ErrorResolverImpl
 import io.viesure.hiring.view.ErrorWidget
 import io.viesure.hiring.datasource.Resource
 import io.viesure.hiring.model.Article
+import io.viesure.hiring.screen.base.BaseViewModel
 import io.viesure.hiring.usecase.GetArticleUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,8 +24,7 @@ import java.util.*
 
 @OpenForTesting
 class ArticleDetailViewModel(private val getArticleUseCase: GetArticleUseCase,
-                             private val application: Application) : ViewModel(),
-    ErrorResolver by ErrorResolverImpl(application) {
+                             private val application: Application): BaseViewModel(application) {
     val articleDetailViewContent = MediatorLiveData<ArticleDetailViewContent>()
     val error = MediatorLiveData<ErrorWidget.ErrorViewContent>()
     val loadingVisibility = MediatorLiveData<Int>()

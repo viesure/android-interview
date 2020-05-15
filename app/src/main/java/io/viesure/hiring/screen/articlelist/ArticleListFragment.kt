@@ -12,14 +12,14 @@ import io.viesure.hiring.MainActivity
 import io.viesure.hiring.R
 import io.viesure.hiring.databinding.FragmentArticleListBinding
 import io.viesure.hiring.screen.articledetail.ArticleDetailFragment
+import io.viesure.hiring.screen.base.BaseFragment
 import io.viesure.hiring.screen.base.viewModelFactory
 import org.kodein.di.android.x.kodein
 import org.kodein.di.direct
 import org.kodein.di.generic.instance
 
-class ArticleListFragment : Fragment() {
-    private val kodein by kodein()
-    private val viewModel by viewModels<ArticleListViewModel>(factoryProducer = { viewModelFactory { kodein.direct.instance<ArticleListViewModel>() } })
+class ArticleListFragment : BaseFragment() {
+    override val viewModel by viewModels<ArticleListViewModel>(factoryProducer = { viewModelFactory { kodein.direct.instance<ArticleListViewModel>() } })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,25 +35,11 @@ class ArticleListFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        setupNavigation()
-
         return binding.root
     }
 
     override fun onStart() {
         super.onStart()
         viewModel.load()
-    }
-
-    private fun setupNavigation() {
-        viewModel.articleIdSelected.observe(viewLifecycleOwner, Observer {
-            it.getContentIfNotHandled()?.let {
-                openArticleDetails(it)
-            }
-        })
-    }
-
-    private fun openArticleDetails(articleId: String) {
-        (requireActivity() as? MainActivity)?.openFragment(ArticleDetailFragment.newInstance(articleId))
     }
 }

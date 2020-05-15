@@ -49,6 +49,7 @@ class ArticleDetailFragmentTest : BaseUnitTest() {
 
         liveData = MediatorLiveData<ArticleDetailViewContent>()
         whenever(mockedViewModel.articleDetailViewContent).thenReturn(liveData)
+        whenever(mockedViewModel.navigation).thenReturn(mock())
     }
 
     @get:Rule

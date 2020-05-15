@@ -7,7 +7,6 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/main_fragment_container"
-        android:name="io.viesure.hiring.screen.articlelist.ArticleListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -11,4 +11,5 @@ fun Kodein.MainBuilder.initKodein() {
     import(useCaseModule)
     import(databaseModule)
     import(coroutineModule)
+    import(navigationModule)
 }

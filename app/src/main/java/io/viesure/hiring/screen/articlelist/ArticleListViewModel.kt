@@ -9,6 +9,8 @@ import io.viesure.hiring.screen.base.ErrorResolverImpl
 import io.viesure.hiring.view.ErrorWidget
 import io.viesure.hiring.datasource.Resource
 import io.viesure.hiring.model.Article
+import io.viesure.hiring.screen.articledetail.ArticleDetailNavigator
+import io.viesure.hiring.screen.base.BaseViewModel
 import io.viesure.hiring.screen.base.Event
 import io.viesure.hiring.usecase.GetArticleListUseCase
 import io.viesure.hiring.view.ArticleHeaderWidget
@@ -19,16 +21,15 @@ import kotlinx.coroutines.launch
 class ArticleListViewModel(
     application: Application,
     private val getArticleListUseCase: GetArticleListUseCase
-) : ViewModel(), ErrorResolver by ErrorResolverImpl(application) {
+) : BaseViewModel(application) {
     val articleHeaders = MediatorLiveData<List<ArticleHeaderWidget.ViewContent>>()
     val error = MediatorLiveData<ErrorWidget.ErrorViewContent>()
     val loadingVisibility = MediatorLiveData<Int>()
-    val articleIdSelected = MutableLiveData<Event<String>>()
 
     private var previousArticles: LiveData<Resource<List<Article>>>? = null
 
-    fun load(forceReload:Boolean = false) {
-        if(!forceReload && previousArticles!= null) return
+    fun load(forceReload: Boolean = false) {
+        if (!forceReload && previousArticles != null) return
         viewModelScope.launch(Dispatchers.Main) {
 
             //in case of a retry after an error, we stop listening for the old, failed liveData
@@ -43,7 +44,8 @@ class ArticleListViewModel(
             articleHeaders.addSource(articles) {
                 when (it) {
                     is Resource.Success -> {
-                        articleHeaders.value = it.data.map { ArticleHeaderWidget.ViewContent(it) {articleIdSelected.value = Event(it.id)} }
+                        articleHeaders.value =
+                            it.data.map { ArticleHeaderWidget.ViewContent(it) { navigate(ArticleDetailNavigator.uri(it.id)) } }
                     }
                     else -> articleHeaders.value = null
                 }
@@ -51,7 +53,7 @@ class ArticleListViewModel(
 
             error.addSource(articles) {
                 when (it) {
-                    is Resource.Error -> error.value = createLoadingError(it.exception, {load(true)})
+                    is Resource.Error -> error.value = createLoadingError(it.exception, { load(true) })
                     else -> error.value = null
                 }
             }
