@@ -1,6 +1,7 @@
 package io.viesure.hiring.screen.articledetail
 
 import BaseUnitTest
+import android.app.Application
 import android.text.Html
 import android.text.SpannedString
 import android.view.View
@@ -9,12 +10,14 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import getOrAwaitValue
 import io.viesure.hiring.R
 import io.viesure.hiring.ViesureApplication
 import io.viesure.hiring.datasource.Resource
+import io.viesure.hiring.di.initKodein
 import io.viesure.hiring.model.Article
 import io.viesure.hiring.usecase.GetArticleUseCase
 import io.viesure.hiring.view.ErrorWidget
@@ -25,6 +28,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.kodein.di.Kodein
+import org.kodein.di.direct
+import org.kodein.di.generic.bind
+import org.kodein.di.generic.instance
+import org.kodein.di.generic.provider
+import org.kodein.di.generic.singleton
 import java.io.IOException
 import java.lang.Exception
 import java.lang.RuntimeException
@@ -35,13 +44,20 @@ import java.text.SimpleDateFormat
 class ArticleDetailViewModelTest() : BaseUnitTest() {
     @Test
     fun testLoadingThenSuccess() = runBlockingTest {
-        val mockedGetArticlesUseCase = mock<GetArticleUseCase>()
+        val articleId = "articleId"
+        val mockedGetArticleUseCase = mock<GetArticleUseCase>()
         val sourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
 
-        whenever(mockedGetArticlesUseCase.invoke(any())).thenReturn(sourceLiveData)
+        whenever(mockedGetArticleUseCase.invoke(eq(articleId))).thenReturn(sourceLiveData)
 
-        val viewModel = ArticleDetailViewModel(mockedGetArticlesUseCase, ApplicationProvider.getApplicationContext<ViesureApplication>())
-        viewModel.load("whatever")
+        val kodein = Kodein{
+            initKodein()
+            bind<GetArticleUseCase>(overrides = true) with provider {mockedGetArticleUseCase}
+            bind<Application>() with singleton { ApplicationProvider.getApplicationContext<ViesureApplication>() }
+        }
+
+        val viewModel = kodein.direct.instance<ArticleDetailViewModel>()
+        viewModel.load(articleId)
 
         sourceLiveData.value = Resource.Loading
 
