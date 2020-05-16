@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import getOrAwaitValue
 import io.viesure.hiring.datasource.Resource
 import io.viesure.hiring.datasource.repository.ArticleRepository
+import io.viesure.hiring.di.initKodein
 import io.viesure.hiring.model.Article
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -15,11 +16,28 @@ import oldArticle
 import oldestArticle
 import org.junit.*
 import org.junit.Assert.assertEquals
+import org.kodein.di.Kodein
+import org.kodein.di.direct
+import org.kodein.di.generic.bind
+import org.kodein.di.generic.instance
+import org.kodein.di.generic.provider
 import java.lang.Exception
 
 @ExperimentalCoroutinesApi
-class GetArticlesUseCaseTest : BaseUnitTest() {
+class GetArticleListUseCaseTest : BaseUnitTest() {
+    private lateinit var mockedArticleRepository: ArticleRepository
+    private lateinit var useCaseInTest: GetArticleListUseCase
 
+    @Before
+    override fun before(){
+        super.before()
+        mockedArticleRepository = mock()
+        val kodein = Kodein{
+            initKodein()
+            bind<ArticleRepository>(overrides = true) with provider { mockedArticleRepository }
+        }
+        useCaseInTest = kodein.direct.instance()
+    }
     @Test
     fun testSuccessAndSort() = runBlockingTest {
 
@@ -28,13 +46,10 @@ class GetArticlesUseCaseTest : BaseUnitTest() {
 
         val liveData = MutableLiveData<Resource<List<Article>>>()
         liveData.value = Resource.Success(data)
-        val repository = mock<ArticleRepository>()
 
-        whenever(repository.getArticles()).thenReturn(liveData)
+        whenever(mockedArticleRepository.getArticles()).thenReturn(liveData)
 
-        val useCase = GetArticleListUseCaseImpl(repository, testDispatcher)
-
-        val result = useCase.invoke().getOrAwaitValue()
+        val result = useCaseInTest.invoke().getOrAwaitValue()
 
         assertEquals(expected, (result as Resource.Success<List<Article>>).data)
     }
@@ -43,13 +58,10 @@ class GetArticlesUseCaseTest : BaseUnitTest() {
     fun testLoadingThenError() = runBlockingTest {
         val liveData = MutableLiveData<Resource<List<Article>>>()
         liveData.value = Resource.Loading
-        val repository = mock<ArticleRepository>()
 
-        whenever(repository.getArticles()).thenReturn(liveData)
+        whenever(mockedArticleRepository.getArticles()).thenReturn(liveData)
 
-        val useCase = GetArticleListUseCaseImpl(repository, testDispatcher)
-
-        val resultLiveData = useCase.invoke()
+        val resultLiveData = useCaseInTest.invoke()
         assertEquals(Resource.Loading, resultLiveData.getOrAwaitValue())
 
         val error = Resource.Error(Exception())

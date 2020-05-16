@@ -8,6 +8,7 @@ import io.viesure.hiring.di.DiConfig
 import io.viesure.hiring.di.initKodein
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -28,8 +29,8 @@ import java.util.*
 
 @ExperimentalCoroutinesApi
 class ArticleNetworkTest : BaseUnitTest() {
-    lateinit var server: MockWebServer
-    lateinit var testKodein: Kodein
+    private lateinit var server: MockWebServer
+    private lateinit var articleApiInTest: ArticleApi
 
     @Before
     override fun before() {
@@ -38,13 +39,15 @@ class ArticleNetworkTest : BaseUnitTest() {
         server.start()
         val baseUrl = server.url("/").toString()
 
-        testKodein = Kodein {
+        val kodein = Kodein {
             initKodein()
 
             bind<String>(DiConfig.TAG_BASE_URL, true) with singleton { baseUrl }
 
             bind<HttpLoggingInterceptor.Level>(overrides = true) with singleton { HttpLoggingInterceptor.Level.NONE }
         }
+
+        articleApiInTest = kodein.direct.instance()
     }
 
     @After
@@ -75,26 +78,16 @@ class ArticleNetworkTest : BaseUnitTest() {
                 "http://dummyimage.com/573x684.bmp/cc0000/ffffff"
             )
         )
-
         runBlocking {
-
-            val articleApi: ArticleApi = testKodein.direct.instance()
-
-            val actual = articleApi.getArticles()
-
-            assertEquals(expected, actual)
+            assertEquals(expected, articleApiInTest.getArticles())
         }
-
-
     }
 
     @Test(expected = JsonDataException::class)
     fun testParseError() {
         server.enqueue(MockResponse().setBody(readFile("article_list_invalid.json")))
-
         runBlocking {
-            val articleApi: ArticleApi = testKodein.direct.instance()
-            articleApi.getArticles()
+            articleApiInTest.getArticles()
         }
     }
 

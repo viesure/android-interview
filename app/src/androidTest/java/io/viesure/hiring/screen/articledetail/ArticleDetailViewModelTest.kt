@@ -2,6 +2,7 @@ package io.viesure.hiring.screen.articledetail
 
 import BaseUnitTest
 import android.app.Application
+import android.content.Context
 import android.text.Html
 import android.text.SpannedString
 import android.view.View
@@ -26,6 +27,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import newArticle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.kodein.di.Kodein
@@ -41,14 +43,16 @@ import java.text.SimpleDateFormat
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
-class ArticleDetailViewModelTest() : BaseUnitTest() {
-    @Test
-    fun testLoadingThenSuccess() = runBlockingTest {
-        val articleId = "articleId"
-        val mockedGetArticleUseCase = mock<GetArticleUseCase>()
-        val sourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
+class ArticleDetailViewModelTest : BaseUnitTest() {
+    private lateinit var mockedGetArticleUseCase: GetArticleUseCase
+    private lateinit var viewModelInTest: ArticleDetailViewModel
+    private lateinit var context: Context
 
-        whenever(mockedGetArticleUseCase.invoke(eq(articleId))).thenReturn(sourceLiveData)
+    @Before
+    override fun before() {
+        super.before()
+        mockedGetArticleUseCase = mock()
+        context = InstrumentationRegistry.getInstrumentation().targetContext
 
         val kodein = Kodein{
             initKodein()
@@ -56,16 +60,24 @@ class ArticleDetailViewModelTest() : BaseUnitTest() {
             bind<Application>() with singleton { ApplicationProvider.getApplicationContext<ViesureApplication>() }
         }
 
-        val viewModel = kodein.direct.instance<ArticleDetailViewModel>()
-        viewModel.load(articleId)
+        viewModelInTest = kodein.direct.instance()
+    }
+
+
+    @Test
+    fun testLoadingThenSuccess() = runBlockingTest {
+        val articleId = "articleId"
+        val sourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
+
+        whenever(mockedGetArticleUseCase.invoke(eq(articleId))).thenReturn(sourceLiveData)
+
+        viewModelInTest.load(articleId)
 
         sourceLiveData.value = Resource.Loading
 
-        assertEquals(null, viewModel.articleDetailViewContent.getOrAwaitValue { })
-        assertEquals(null, viewModel.error.getOrAwaitValue { })
-        assertEquals(View.VISIBLE, viewModel.loadingVisibility.getOrAwaitValue { })
-
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals(null, viewModelInTest.articleDetailViewContent.getOrAwaitValue { })
+        assertEquals(null, viewModelInTest.error.getOrAwaitValue { })
+        assertEquals(View.VISIBLE, viewModelInTest.loadingVisibility.getOrAwaitValue { })
 
         val expectedArticleDetailViewContent = ArticleDetailViewContent(
             newArticle.title,
@@ -76,22 +88,20 @@ class ArticleDetailViewModelTest() : BaseUnitTest() {
         )
         sourceLiveData.value = Resource.Success(newArticle)
 
-        val actualDetailViewContent = viewModel.articleDetailViewContent.getOrAwaitValue { }
+        val actualDetailViewContent = viewModelInTest.articleDetailViewContent.getOrAwaitValue { }
         assertEquals(expectedArticleDetailViewContent, actualDetailViewContent)
-        assertEquals(null, viewModel.error.getOrAwaitValue { })
-        assertEquals(View.GONE, viewModel.loadingVisibility.getOrAwaitValue { })
+        assertEquals(null, viewModelInTest.error.getOrAwaitValue { })
+        assertEquals(View.GONE, viewModelInTest.loadingVisibility.getOrAwaitValue { })
     }
 
     @Test
     fun testError() = runBlockingTest{
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val mockedGetArticlesUseCase = mock<GetArticleUseCase>()
+        val articleId = "articleId"
         val sourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
 
-        whenever(mockedGetArticlesUseCase.invoke(any())).thenReturn(sourceLiveData)
+        whenever(mockedGetArticleUseCase.invoke(eq(articleId))).thenReturn(sourceLiveData)
 
-        val viewModel = ArticleDetailViewModel(mockedGetArticlesUseCase, ApplicationProvider.getApplicationContext<ViesureApplication>())
-        viewModel.load("whatever")
+        viewModelInTest.load(articleId)
 
         sourceLiveData.value = Resource.Error(IOException())
 
@@ -102,35 +112,32 @@ class ArticleDetailViewModelTest() : BaseUnitTest() {
             null
         )
 
-        val actualErrorViewContent = viewModel.error.getOrAwaitValue { }
+        val actualErrorViewContent = viewModelInTest.error.getOrAwaitValue { }
 
         assertEquals(expectedErrorViewContent.title, actualErrorViewContent?.title)
         assertEquals(expectedErrorViewContent.message, actualErrorViewContent?.message)
         assertEquals(expectedErrorViewContent.retriable, actualErrorViewContent?.retriable)
-        assertEquals(null, viewModel.articleDetailViewContent.getOrAwaitValue { })
-        assertEquals(View.GONE, viewModel.loadingVisibility.getOrAwaitValue { })
+        assertEquals(null, viewModelInTest.articleDetailViewContent.getOrAwaitValue { })
+        assertEquals(View.GONE, viewModelInTest.loadingVisibility.getOrAwaitValue { })
     }
 
     @Test
     fun testRetry() = runBlockingTest {
-        val mockedGetArticlesUseCase = mock<GetArticleUseCase>()
+        val articleId = "articleId"
         val failureSourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
         val successSourceLiveData: MutableLiveData<Resource<Article>> = MutableLiveData()
 
-        whenever(mockedGetArticlesUseCase.invoke(any()))
+        whenever(mockedGetArticleUseCase.invoke(eq(articleId)))
             .thenReturn(failureSourceLiveData)
             .thenReturn(successSourceLiveData)
 
-        val viewModel = ArticleDetailViewModel(mockedGetArticlesUseCase, ApplicationProvider.getApplicationContext<ViesureApplication>())
-        viewModel.load("whatever")
+        viewModelInTest.load(articleId)
 
         failureSourceLiveData.value = Resource.Error(RuntimeException())
 
-        assertEquals(null, viewModel.articleDetailViewContent.getOrAwaitValue { })
-        assertNotNull(viewModel.error.getOrAwaitValue { })
-        assertEquals(View.GONE, viewModel.loadingVisibility.getOrAwaitValue { })
-
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals(null, viewModelInTest.articleDetailViewContent.getOrAwaitValue { })
+        assertNotNull(viewModelInTest.error.getOrAwaitValue { })
+        assertEquals(View.GONE, viewModelInTest.loadingVisibility.getOrAwaitValue { })
 
         val expectedArticleDetailViewContent = ArticleDetailViewContent(
             newArticle.title,
@@ -140,14 +147,14 @@ class ArticleDetailViewModelTest() : BaseUnitTest() {
             newArticle.image
         )
 
-        viewModel.error.value?.onRetry?.invoke()
+        viewModelInTest.error.value?.onRetry?.invoke()
 
         successSourceLiveData.value = Resource.Success(newArticle)
 
-        val actualDetailViewContent = viewModel.articleDetailViewContent.getOrAwaitValue { }
+        val actualDetailViewContent = viewModelInTest.articleDetailViewContent.getOrAwaitValue { }
         assertEquals(expectedArticleDetailViewContent, actualDetailViewContent)
-        assertEquals(null, viewModel.error.getOrAwaitValue { })
-        assertEquals(View.GONE, viewModel.loadingVisibility.getOrAwaitValue { })
+        assertEquals(null, viewModelInTest.error.getOrAwaitValue { })
+        assertEquals(View.GONE, viewModelInTest.loadingVisibility.getOrAwaitValue { })
     }
 
 }
