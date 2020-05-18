@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Exercise</string>
+    <string name="zero_articles_found">Zero articles found.\nCheck your WIFI connection and restart the app.</string>
+</resources>
