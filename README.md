@@ -20,19 +20,20 @@ This endpoint returns a dummy list of articles with the follosing structure:
 
 ## Acceptance criteria:
 * User must be able to see the latest available articles whenever he/she launches the app.
-* User must be able to see the latest -locally- stored articles (if any) in case of data  ssynchroniastion failure.
-* The article list musst be sorted by the given date.
+* User must be able to see the latest -locally- stored articles (if any) in case of data  synchroniastion failure.
+* All locally stored data should be **encrypted**.
+* The article list must be sorted by the given date.
 * Article list contains the following items:
-** Article title: `title`
-** First two lines of `description`
-** Article header image : `image`
+  * Article title: `title`
+  * First two lines of `description`
+  * Article header image : `image`
 * User must be able to see the full detail of articles by tapping each list item.
 * The following items must be shown in the article's detail page:
-** Article header image : `image`
-** Article title: `title`
-** Article content : `description`
-** Author e-mail address: `author`
-** Article's release date : `date` (this date must be shown by `Wed, Jul 8, '20` format)
+  * Article header image : `image`
+  * Article title: `title`
+  * Article content : `description`
+  * Author e-mail address: `author`
+  * Article's release date : `date` (this date must be shown by `Wed, Jul 8, '20` format)
 
 ## Design mockup:
 ![design](https://i.ibb.co/5WzcrWR/Screenshot-2020-03-28-at-15-25-52.png")
@@ -40,8 +41,8 @@ This endpoint returns a dummy list of articles with the follosing structure:
 ## Minimum technical Expectation
 * Minimum **85%** test coverage.
 * Clean architecture and coding style.
-* App should support `API 21` and above.
-* As a mobile engineer you should be able to detect/prevent error and posssible edge cases.
+* App should support `API 23` and above.
+* As a mobile engineer you should be able to detect/prevent error and possible edge cases.
 
 ## Next Step
 Our mobile development team will review your task carefully and contact you as soon as possible.
