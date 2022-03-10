@@ -22,7 +22,7 @@ This endpoint returns a dummy list of articles with the follosing structure:
 * User must be able to see the latest available articles whenever he/she launches the app.
 * In case of data synchroniastion failure due to a **500 internal server error or network coverage issue** we need to retry **3 times with 2 seconds backoff delay** before showing an error message to user.
 * User must be able to see the latest -locally- stored articles (if any) in case of data  synchroniastion failure.
-* All locally stored data should be **encrypted**.
+* All locally stored data are **encrypted**. (optional plus point)
 * The article list must be sorted by the given date.
 * Article list contains the following items:
   * Article title: `title`
@@ -44,7 +44,7 @@ This endpoint returns a dummy list of articles with the follosing structure:
 * The app must at least have two modules (articles and details)
 
 ## Minimum technical Expectation
-* Minimum **80%** test coverage. (You need to attach the coverage report after finishing the task)
+* Minimum **80%** test coverage.
 * Clean architecture and coding style.
 * Use Hilt/Dagger for dependency injection.
 * App should support `API 23` and above.
