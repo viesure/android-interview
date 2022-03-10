@@ -4,7 +4,7 @@ Use an API to fetch list of Articles, parse, persist to disk and present in a Li
 
 ## Mocked Articles API:
 ```curl
-curl --request GET 'https://run.mocky.io/v3/de42e6d9-2d03-40e2-a426-8953c7c94fb8'
+curl --request GET 'https://run.mocky.io/v3/5de1afae-d287-4210-a07e-eb73d55550bb'
 ```
 This endpoint returns a dummy list of articles with the follosing structure:
 ```json
@@ -44,9 +44,9 @@ This endpoint returns a dummy list of articles with the follosing structure:
 * The app must at least have two modules (articles and details)
 
 ## Minimum technical Expectation
-* Minimum **85%** test coverage.
+* Minimum **80%** test coverage. (You need to attach the coverage report after finishing the task)
 * Clean architecture and coding style.
-* Use Dagger for dependency injection.
+* Use Hilt/Dagger for dependency injection.
 * App should support `API 23` and above.
 * As a mobile engineer you should be able to detect/prevent error and possible edge cases.
 
